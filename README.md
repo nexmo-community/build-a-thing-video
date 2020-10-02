@@ -1,8 +1,19 @@
 ![Vonage](.github/vonage.png)
 
-# Project Title
+# Build a Thing - Video Conferencing Application
 
-Project Description
+Every two weeks at <https://twitch.tv/vonagedevs> at 6PM UK-time, we continue development on this video conferencing application.
+
+## Setup
+
+1. Set up a MongoDB Project and Cluster
+1. Create a Database called `bat` and a Collection called `sesions`
+1. Allow Network Access From Anywhere in the MongoDB UI
+1. Click the button below to deploy
+
+<a href="https://app.netlify.com/start/deploy?repository=https://github.com/nexmo-community/build-a-thing-video">
+    <img src="https://www.netlify.com/img/deploy/button.svg">
+</a>
 
 ## Code of Conduct
 

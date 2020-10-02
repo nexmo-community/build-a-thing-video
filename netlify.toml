@@ -5,3 +5,7 @@
     from = "/api/*"
     to = "/.netlify/functions/:splat"
     status = 200
+[template.environment]
+  VIDEO_KEY = "Vonage Video API Project Key"
+  VIDEO_SECRET = "Vonage Video API Project Secret"
+  MONGODB_URL = "MongoDB URI"
