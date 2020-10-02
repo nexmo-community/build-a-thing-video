@@ -1,0 +1,25 @@
+{
+  "name": "build-a-thing-video",
+  "version": "1.0.0",
+  "description": "![Vonage](.github/vonage.png)",
+  "main": "index.js",
+  "dependencies": {
+    "mongodb": "^3.6.2",
+    "opentok": "^2.10.0"
+  },
+  "devDependencies": {},
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/nexmo-community/build-a-thing-video.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/nexmo-community/build-a-thing-video/issues"
+  },
+  "homepage": "https://github.com/nexmo-community/build-a-thing-video#readme"
+}

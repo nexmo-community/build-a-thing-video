@@ -9,11 +9,15 @@ Every two weeks at <https://twitch.tv/vonagedevs> at 6PM UK-time, we continue de
 1. Set up a MongoDB Project and Cluster
 1. Create a Database called `bat` and a Collection called `sesions`
 1. Allow Network Access From Anywhere in the MongoDB UI
-1. Click the button below to deploy
+1. Click the button below to deploy<br><a href="https://app.netlify.com/start/deploy?repository=https://github.com/nexmo-community/build-a-thing-video">
+   <img src="https://www.netlify.com/img/deploy/button.svg">
+   </a>
 
-<a href="https://app.netlify.com/start/deploy?repository=https://github.com/nexmo-community/build-a-thing-video">
-    <img src="https://www.netlify.com/img/deploy/button.svg">
-</a>
+1. Install the Netlify CLI and Login
+1. Clone your new repostiory created by clicking the button above
+1. Run `netlify init` and connect your local project to your Netlify application
+1. Run `npm install`
+1. Run `netlify dev` - the project will be running on port 8888 unless it is already in use
 
 ## Code of Conduct
 
