@@ -6,13 +6,19 @@
     <title>Build a Thing Video App</title>
   </head>
   <body>
-    <div id="publishers"></div>
-    <div id="subscribers"></div>
+    <div class="video-streams" style="background: #d83b9e; padding: 1em">
+      <h2>Publishers</h2>
+      <div id="publishers"></div>
+    </div>
+    <div class="video-streams" style="background: #80d0f0; padding: 1em">
+      <h2>Subscribers</h2>
+      <div id="subscribers"></div>
+    </div>
 
     <script src="https://static.opentok.com/v2/js/opentok.min.js"></script>
     <script>
       const params = Object.fromEntries(new URLSearchParams(location.search))
-      fetch(`/api/session?room=${params.room}`)
+      fetch(`/api/session?room=${params.id}`)
         .then(r => r.json())
         .then(({ apiKey, sessionId, token }) => {
           const session = OT.initSession(apiKey, sessionId)
@@ -21,6 +27,7 @@
             session.publish(camera)
           })
           session.on('streamCreated', event => {
+            console.log('Subscribing!')
             session.subscribe(event.stream, 'subscribers')
           })
         })

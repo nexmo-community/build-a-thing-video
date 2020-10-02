@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Build a Thing Video App</title>
+  </head>
+  <body>
+    <form id="enter">
+      <div class="input-group">
+        <label for="room">Room Code</label>
+        <input type="text" id="room" />
+      </div>
+      <button>Enter Room</button>
+    </form>
+    <script>
+      document.getElementById('enter').addEventListener('submit', event => {
+        event.preventDefault()
+        const room = document.getElementById('room').value
+        if (!room) return alert('Please provide a room code')
+        window.location.replace(`/room?id=${room}`)
+      })
+    </script>
+  </body>
+</html>
