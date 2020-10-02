@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Build a Thing Video App</title>
+  </head>
+  <body>
+    <div id="publishers"></div>
+    <div id="subscribers"></div>
+
+    <script src="https://static.opentok.com/v2/js/opentok.min.js"></script>
+    <script>
+      const params = Object.fromEntries(new URLSearchParams(location.search))
+      fetch(`/api/session?room=${params.room}`)
+        .then(r => r.json())
+        .then(({ apiKey, sessionId, token }) => {
+          const session = OT.initSession(apiKey, sessionId)
+          const camera = OT.initPublisher('publishers', { mirror: false })
+          session.connect(token, () => {
+            session.publish(camera)
+          })
+          session.on('streamCreated', event => {
+            session.subscribe(event.stream, 'subscribers')
+          })
+        })
+    </script>
+  </body>
+</html>
