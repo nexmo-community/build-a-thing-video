@@ -1,0 +1,139 @@
+*{
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: Verdana, Geneva, Tahoma, sans-serif;
+    font-size: 14px;
+    min-height: 100vh;
+}
+
+/*********UTILITIES********/
+
+.flex__center {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.flex__between {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+/*********INDEX***********/
+
+.wrapper {
+    border: 4px rgba(155, 56, 73, 0.938) solid;
+    min-height: 50%;
+    min-width: 40%;
+    max-width: 80%;
+    padding: 5rem;
+    
+}
+
+form {
+    text-align: center;
+}
+
+.input-group {
+    display: flex;
+    flex-direction: column;
+}
+
+label {
+    font-size: 1.5rem;
+    font-weight: bold;
+    margin-bottom: .5rem;
+}
+
+input {
+    background-color: white;
+    border-color: rgb(109, 108, 108);
+    border-radius: .3rem;
+    margin: 0 auto;
+    padding: .5rem;
+}
+
+button {
+    background-color: rgba(155, 56, 73, 0.938);
+    color: white;
+    border: none;
+    border-radius: .5rem;
+    box-shadow: 0px 2px 7px 1px rgba(0, 0, 0, 0.404);
+    font-size: inherit;
+    font-family: inherit;
+    margin-top: 1rem;
+    padding: .5rem;
+}
+
+button:focus {
+    outline: none;
+}
+
+button:hover {
+    transform: translate(.2rem, -.05rem);
+    transform: scale(1.1, 1.1);
+}
+
+/*********CLIENT***********/
+main {
+    height: 100%;
+    width: 100%;
+}
+
+main h2 {
+    margin-bottom: 1rem;
+}
+
+.video-streams {
+    height: 100vh;
+    padding: 4rem;
+}
+
+.video-streams__publishers {
+    width: 60%;
+}
+
+/* Align heading with video frame */
+.video-streams__publishers h2 {
+    margin-left: 2rem;
+}
+
+.video-streams__subscribers {
+    width: 30%;
+    background-color: #e4e4ea;
+}
+
+#publishers {
+    /* Override inline styling from API */
+    height: calc(100% - 2rem) !important;
+    width: 100% !important;
+    border-radius: 1rem;
+    margin: 2rem;
+}
+
+@media all and (max-width: 750px) {
+    main {
+        flex-direction: column;
+    }
+
+    .video-streams {
+        height: 70vh;
+    }
+
+    .video-streams__publishers, .video-streams__subscribers {
+        width: 100%;
+    }
+
+    .video-streams__publishers h2 {
+        margin-left: unset;
+    }
+
+    #publishers {
+        margin: 0;
+    }
+}

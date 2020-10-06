@@ -1,36 +1,42 @@
 <!DOCTYPE html>
 <html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Build a Thing Video App</title>
-  </head>
-  <body>
-    <div class="video-streams" style="background: #d83b9e; padding: 1em">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Build a Thing Video App</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+  <main class="flex__between">
+    <section class="video-streams video-streams__publishers">
       <h2>Publishers</h2>
       <div id="publishers"></div>
-    </div>
-    <div class="video-streams" style="background: #80d0f0; padding: 1em">
+    </section>
+    <aside class="video-streams video-streams__subscribers">
       <h2>Subscribers</h2>
       <div id="subscribers"></div>
-    </div>
+    </aside>
+  </main>
 
-    <script src="https://static.opentok.com/v2/js/opentok.min.js"></script>
-    <script>
-      const params = Object.fromEntries(new URLSearchParams(location.search))
-      fetch(`/api/session?room=${params.id}`)
-        .then(r => r.json())
-        .then(({ apiKey, sessionId, token }) => {
-          const session = OT.initSession(apiKey, sessionId)
-          const camera = OT.initPublisher('publishers', { mirror: false })
-          session.connect(token, () => {
-            session.publish(camera)
-          })
-          session.on('streamCreated', event => {
-            console.log('Subscribing!')
-            session.subscribe(event.stream, 'subscribers')
-          })
+  <script src="https://static.opentok.com/v2/js/opentok.min.js"></script>
+  <script>
+    const params = Object.fromEntries(new URLSearchParams(location.search))
+    fetch(`/api/session?room=${params.id}`)
+      .then(r => r.json())
+      .then(({ apiKey, sessionId, token }) => {
+        const session = OT.initSession(apiKey, sessionId)
+        const camera = OT.initPublisher('publishers', { mirror: false })
+        session.connect(token, () => {
+          session.publish(camera)
         })
-    </script>
-  </body>
+        session.on('streamCreated', event => {
+          console.log('Subscribing!')
+          session.subscribe(event.stream, 'subscribers')
+        })
+      })
+  </script>
+</body>
+
 </html>
