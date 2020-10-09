@@ -81,7 +81,7 @@
 
       const getUserStream = (function setupGreenscreenEvents(){
         const backgroundForm = document.querySelector('#background-image-form');
-        const [[ outputCanvas, outputContext ], [ workspaceCanvas, workspaceContext ]] = [...document.querySelectorAll('.processing canvas')].map(canvas => [canvas, canvas.getContext('2d', { alpha: false})]);
+        const [[ outputCanvas, outputContext ], [ workspaceCanvas, workspaceContext ]] = [...document.querySelectorAll('.processing canvas')].map(canvas => [canvas, canvas.getContext('2d')]);
         const input = document.querySelector('.processing video');
         let backgroundImage = null;
         let frameRate = 60;
@@ -119,7 +119,7 @@
 
         // Remove current background image
         backgroundForm.querySelector('#remove-image').addEventListener('click', () => {
-          setFormEnabled(backgroundForm, false);
+          setFormEnabled(false);
           backgroundImage = null;
           worker.postMessage({ action: 'setBackgroundImage', data: null });
           backgroundForm['image-input'].value = '';
@@ -131,7 +131,7 @@
           const name = input.id.split('-input')[0];
 
           if (name === 'image') {
-              setFormEnabled(backgroundForm, true)
+              setFormEnabled(true)
               const imageFile = input.files[0];
               if (!imageFile) return;
 
@@ -176,7 +176,7 @@
           canvas.width = image.width;
           canvas.height = image.height;
 
-          const context = canvas.getContext('2d', { alpha: false});
+          const context = canvas.getContext('2d');
           context.drawImage(image, 0, 0, image.width, image.height);
           worker.postMessage({
             action: 'setBackgroundImage',
