@@ -17,6 +17,36 @@
         <h2>Subscribers</h2>
         <div id="subscribers"></div>
       </section>
+      <section class="preferences">
+        <button>Customize Background</button>
+        <div class="processing content">
+          <video autoplay style="display: none;"></video>
+          <canvas></canvas>
+          <canvas style="display: none;"></canvas>
+          <form id="background-image-form" autocomplete="off" style="display: grid; grid-template-columns: auto auto;">
+            <label for="image-input">Background Image</label>
+            <span>
+              <input id="image-input" type="file" />
+              <button id="remove-image" type="button">Clear</button>
+            </span>
+
+            <label for="overlay-input">Overlay</label>
+            <input id="overlay-input" type="checkbox" />
+
+            <label for="x-input">X</label>
+            <input id="x-input" type="number" step="1" value="0" disabled />
+
+            <label for="y-input">Y</label>
+            <input id="y-input" type="number" step="1" value="0" disabled />
+
+            <label for="width-input">Width</label>
+            <input id="width-input" type="number" min="0" step="1" disabled />
+
+            <label for="height-input">Height</label>
+            <input id="height-input" type="number" min="0" step="1" disabled />
+          </form>
+        </did>
+      </section>
     </main>
     <aside id="chat">
       <ul id="messages"></ul>
@@ -28,39 +58,205 @@
 
     <script src="https://static.opentok.com/v2/js/opentok.min.js"></script>
     <script>
+
+      const getUserStream = (function setupGreenscreenEvents(){
+        const backgroundForm = document.querySelector('#background-image-form');
+        const [[ outputCanvas, outputContext ], [ workspaceCanvas, workspaceContext ]] = [...document.querySelectorAll('.processing canvas')].map(canvas => [canvas, canvas.getContext('2d', { alpha: false})]);
+        const input = document.querySelector('.processing video');
+        let backgroundImage = null;
+        let frameRate = 60;
+        let lastRender = 0;
+
+        /**
+         * Set enabled state of background form
+         */
+        const setFormEnabled = (() => {
+          const elements = [...backgroundForm.querySelectorAll('input, button')];
+          return (enabled) => elements
+            .filter(input => input.id !== 'image-input')
+            .forEach(input => input.disabled = !enabled);
+        })();
+
+        // Create worker script to handle image changes off the main thread
+        const worker = new Worker('./worker.js');
+        worker.onmessage = event => {
+          // Only message sent from worker is the updated image data
+          outputContext.putImageData(event.data, 0, 0);
+          requestAnimationFrame(render);
+        }
+
+        // Toggle open/closed button text and state
+        document.querySelector('.preferences button').addEventListener('click', ({ target }) => {
+          const opened = document.querySelector('.preferences .content').classList.toggle('opened');
+          target.textValue = opened ? 'Close' : 'Customize Background';
+          if (opened) return;
+
+          // Disable overlay when closing
+          const overlay = backgroundForm['overlay-input'];
+          if (overlay.checked) overlay.click();
+        });
+
+
+        // Remove current background image
+        backgroundForm.querySelector('#remove-image').addEventListener('click', () => {
+          setFormEnabled(backgroundForm, false);
+          backgroundImage = null;
+          worker.postMessage({ action: 'setBackgroundImage', data: null });
+          backgroundForm['image-input'].value = '';
+        });
+
+        // Update worker with new image/options for image
+        backgroundForm.addEventListener('change', (e) => {
+          const input = e.target;
+          const name = input.id.split('-input')[0];
+
+          if (name === 'image') {
+              setFormEnabled(backgroundForm, true)
+              const imageFile = input.files[0];
+              if (!imageFile) return;
+
+              // Convert file to image
+              const image = new Image();
+              image.onload = () => setBackgroundImage(image);
+              image.src = URL.createObjectURL(imageFile);
+              return;
+          }
+
+          switch(name){
+            case 'x':
+            case 'y':
+            case 'overlay':
+              // Post updated preference:
+              // value as number for x/y, true/false boolean for overlay
+              return worker.postMessage({
+                action: 'updateBackground',
+                data: {
+                  [name]: name === 'overlay' ? input.checked : parseInt(input.value) 
+                }
+              });
+            case 'width':
+            case 'height':
+              // Update the dimensions of the image and update the image data
+              backgroundImage[name] = parseInt(input.value);
+              return setBackgroundImage(backgroundImage);
+          }
+        })
+
+        /**
+         * Set the background image to use
+         */
+        const setBackgroundImage = image => {
+          const canvas = document.createElement('canvas');
+          canvas.width = image.width;
+          canvas.height = image.height;
+
+          const context = canvas.getContext('2d', { alpha: false});
+          context.drawImage(image, 0, 0, image.width, image.height);
+          worker.postMessage({
+            action: 'setBackgroundImage',
+            data: context.getImageData(0, 0, image.width, image.height)
+          });
+
+          // Update form values
+          backgroundForm['width-input'].value = image.width;
+          backgroundForm['height-input'].value = image.height;
+
+          // Save image for future resolution adjustments
+          backgroundImage = image;
+        }
+
+        input.addEventListener('play', () => {
+          // Update dimensions of canvases and video when video metadata loads
+          for (const element of [outputCanvas, workspaceCanvas, input]){
+            element.width = input.videoWidth
+            element.height = input.videoHeight;
+          }
+
+          // Get frame rate and start rendering
+          frameRate = input.srcObject.getVideoTracks()[0].getSettings().frameRate;
+          render();
+        });
+
+        /**
+         * Render the current frame of video
+         */
+        const render = () => {
+          // Prevent rendering faster then the frame rate of the input video
+          const now = performance.now();
+          if (now - lastRender < 1000 / frameRate) return requestAnimationFrame(render);
+          lastRender = now;
+
+          // Stop rendering if the video is stopped
+          if (input.ended || input.paused) return;
+
+          if (backgroundImage) {
+            // Pass frame data to worker
+            workspaceContext.drawImage(input, 0, 0);
+            worker.postMessage({ action: 'applyGreenscreenEffect', data: workspaceContext.getImageData(0, 0, input.videoWidth, input.videoHeight) });
+            return;
+          }
+
+          // There is no background, pass image directly to the output canvas
+          outputContext.drawImage(input, 0, 0);
+          requestAnimationFrame(render);
+        }
+
+        /**
+         * Prompt user for video media, and return output canvas
+         */
+        return async () => {
+          const inputStream = await navigator.mediaDevices.getUserMedia({ video: true });
+          input.srcObject = inputStream;
+
+          const stream = outputCanvas.captureStream();
+          const audioTracks = (input.audioTracks || []);
+          if (audioTracks.length) stream.addTrack(audioTracks[0]);
+          return stream;
+        }
+      })();
+
+
       const params = Object.fromEntries(new URLSearchParams(location.search))
       let session,
         camera,
         subscribers = []
-      fetch(`/api/session?room=${params.id}`)
-        .then(r => r.json())
-        .then(({ apiKey, sessionId, token }) => {
-          session = OT.initSession(apiKey, sessionId)
-          camera = OT.initPublisher('publishers', { mirror: false })
-          session.connect(token, () => {
-            session.publish(camera)
+
+      getUserStream().then((userStream) => {
+        const videoSource = userStream.getVideoTracks()[0];
+        const audioSource = userStream.getAudioTracks()[0];
+        return fetch(`/api/session?room=${params.id}`)
+          .then(r => r.json())
+          .then(({ apiKey, sessionId, token }) => {
+            session = OT.initSession(apiKey, sessionId)
+            camera = OT.initPublisher('publishers', {
+              videoSource, audioSource,
+              mirror: false
+            })
+            session.connect(token, () => {
+              session.publish(camera)
+            })
+            session.on('streamCreated', event => {
+              console.log('Subscribed', event.stream.id)
+              subscribers.push(event.stream)
+              session.subscribe(event.stream, 'subscribers')
+            })
+            session.on('streamDestroyed', event => {
+              console.log('Destroyed', event.stream.id)
+              subscribers = subscribers.filter(sub => sub.id != event.stream.id)
+            })
+            session.on('signal', event => {
+              switch (event.type) {
+                case 'signal:message':
+                  const messages = document.getElementById('messages')
+                  const li = document.createElement('li')
+                  const message = document.createTextNode(event.data)
+                  li.appendChild(message)
+                  messages.appendChild(li)
+                  break
+              }
+            })
           })
-          session.on('streamCreated', event => {
-            console.log('Subscribed', event.stream.id)
-            subscribers.push(event.stream)
-            session.subscribe(event.stream, 'subscribers')
-          })
-          session.on('streamDestroyed', event => {
-            console.log('Destroyed', event.stream.id)
-            subscribers = subscribers.filter(sub => sub.id != event.stream.id)
-          })
-          session.on('signal', event => {
-            switch (event.type) {
-              case 'signal:message':
-                const messages = document.getElementById('messages')
-                const li = document.createElement('li')
-                const message = document.createTextNode(event.data)
-                li.appendChild(message)
-                messages.appendChild(li)
-                break
-            }
-          })
-        })
+      }).catch(err => console.error(err) || alert(err));
 
       document.getElementById('new-message').addEventListener('submit', event => {
         event.preventDefault()

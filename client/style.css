@@ -105,6 +105,15 @@ main h2 {
   border-radius: 1rem;
 }
 
+/* Background Preferences */
+
+.content {
+  display: none;
+}
+.content.opened{
+  display: block;
+}
+
 /* CHAT */
 
 #chat {
