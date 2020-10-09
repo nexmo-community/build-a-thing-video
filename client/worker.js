@@ -1,6 +1,8 @@
 let background = {
 	x: 0,
 	y: 0,
+	lowerChroma: [75, 70, 25],
+	upperChroma: [180, 100, 75],
 	overlay: false,
 	image: null
 };
@@ -38,13 +40,23 @@ const RGBtoHSL = (r, g, b) => {
 /**
  * Return if the HSL pixel should be replaced
  */
-const shouldReplaceHSL = (h, s, l) => h >= 90 && h < 130 && s > 70;
+const shouldReplaceHSL = (h, s, l) => {
+	const [lh, ls, ll] = background.lowerChroma;
+	const [uh, us, ul] = background.upperChroma;
+	if (lh < uh ? (h < lh || h > uh) : h < uh || h > lh) return false;
+	if (ls < us ? (s < ls || s > us) : s < us || s > ls) return false;
+	if (ll < ul ? (l < ll || l > ul) : l < ul || l > ll) return false;
+	return true;
+}
 
 const ACTIONS = {
 	setBackgroundImage: image => {
 		background = { ...background, image };
 	},
 	updateBackground: update => {
+		for (const key of ['lowerChroma', 'upperChroma']){
+			if (update[key]) update[key] = RGBtoHSL(...update[key])
+		}
 		background = { ...background, ...update};
 	},
 	applyGreenscreenEffect: image => {

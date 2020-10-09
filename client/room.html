@@ -44,6 +44,12 @@
 
             <label for="height-input">Height</label>
             <input id="height-input" type="number" min="0" step="1" disabled />
+
+            <label for="lowerChroma-input">Chroma Min</label>
+            <input id="lowerChroma-input" type="color" value="#63992E" />
+
+            <label for="upperChroma-input">Chroma Max</label>
+            <input id="upperChroma-input" type="color" value="#00FF55" />
           </form>
         </did>
       </section>
@@ -58,6 +64,20 @@
 
     <script src="https://static.opentok.com/v2/js/opentok.min.js"></script>
     <script>
+      /**
+       * Convert hexcode color to RGB
+       *
+       * From https://stackoverflow.com/questions/5623838/rgb-to-hex-and-hex-to-rgb
+       */
+      const hexToRGB = hex => {
+        if (hex[0] == '#') hex = hex.substring(1);
+        const bigint = parseInt(hex, 16);
+        const r = (bigint >> 16) & 255;
+        const g = (bigint >> 8) & 255;
+        const b = bigint & 255;
+
+        return [r, g, b];
+      }
 
       const getUserStream = (function setupGreenscreenEvents(){
         const backgroundForm = document.querySelector('#background-image-form');
@@ -133,6 +153,12 @@
                 data: {
                   [name]: name === 'overlay' ? input.checked : parseInt(input.value) 
                 }
+              });
+            case 'lowerChroma':
+            case 'upperChroma':
+              return worker.postMessage({
+                action: 'updateBackground',
+                data: { [name]: hexToRGB(input.value) }
               });
             case 'width':
             case 'height':
