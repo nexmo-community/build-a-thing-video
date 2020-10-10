@@ -15,6 +15,11 @@ body {
 
 /*********INDEX***********/
 
+
+.hidden {
+  display: none;
+}
+
 .wrapper {
   border: 4px rgba(155, 56, 73, 0.938) solid;
   min-height: 50%;
@@ -105,14 +110,38 @@ main h2 {
   border-radius: 1rem;
 }
 
-/* Background Preferences */
+/* BACKGROUND PREFERENCES */
 
-.content {
-  display: none;
+.background-preferences {
+  padding: 4rem;
+  background-color: #e5eae4;
 }
-.content.opened{
-  display: block;
-}
+
+  .background-preferences > button {
+    width: 100%;
+  }
+
+  .background-preferences > .content {
+    display: none;
+    max-height: 0;
+    background-color: #F9FEF8;
+    padding: 1rem;
+    overflow: hidden;
+    transition: max-height 2s ease-out;
+  }
+  .background-preferences > .content.opened {
+    display: block;
+  }
+
+    .background-preferences > .content > .preview {
+      width: 100%;
+    }
+
+    .background-preferences > .content > form {
+      display: grid;
+      grid-template-columns: auto auto;
+      gap: 0.5rem;
+    }
 
 /* CHAT */
 

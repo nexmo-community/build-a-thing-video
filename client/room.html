@@ -17,13 +17,13 @@
         <h2>Subscribers</h2>
         <div id="subscribers"></div>
       </section>
-      <section class="preferences">
+      <section class="background-preferences">
         <button>Customize Background</button>
-        <div class="processing content">
-          <video autoplay style="display: none;"></video>
-          <canvas></canvas>
-          <canvas style="display: none;"></canvas>
-          <form id="background-image-form" autocomplete="off" style="display: grid; grid-template-columns: auto auto;">
+        <div class="content">
+          <video autoplay class="hidden"></video>
+          <canvas class="preview"></canvas>
+          <canvas class="hidden"></canvas>
+          <form id="background-image-form" autocomplete="off">
             <label for="image-input">Background Image</label>
             <span>
               <input id="image-input" type="file" />
@@ -31,7 +31,7 @@
             </span>
 
             <label for="overlay-input">Overlay</label>
-            <input id="overlay-input" type="checkbox" />
+            <input id="overlay-input" type="checkbox" disabled />
 
             <label for="x-input">X</label>
             <input id="x-input" type="number" step="1" value="0" disabled />
@@ -79,10 +79,18 @@
         return [r, g, b];
       }
 
+      /**
+       * Create Promise that delays by ms
+       */
+      const delay = ms => new Promise(resolve => setTimeout(resolve, ms));
+
+      /**
+       * Prompt user to provide video stream
+       */
       const getUserStream = (function setupGreenscreenEvents(){
-        const backgroundForm = document.querySelector('#background-image-form');
-        const [[ outputCanvas, outputContext ], [ workspaceCanvas, workspaceContext ]] = [...document.querySelectorAll('.processing canvas')].map(canvas => [canvas, canvas.getContext('2d')]);
-        const input = document.querySelector('.processing video');
+        const backgroundForm = document.querySelector('.background-preferences > .content > form');
+        const [[ outputCanvas, outputContext ], [ workspaceCanvas, workspaceContext ]] = [...document.querySelectorAll('.background-preferences > .content > canvas')].map(canvas => [canvas, canvas.getContext('2d')]);
+        const input = document.querySelector('.background-preferences > .content > video');
         let backgroundImage = null;
         let frameRate = 60;
         let lastRender = 0;
@@ -106,10 +114,23 @@
         }
 
         // Toggle open/closed button text and state
-        document.querySelector('.preferences button').addEventListener('click', ({ target }) => {
-          const opened = document.querySelector('.preferences .content').classList.toggle('opened');
-          target.textValue = opened ? 'Close' : 'Customize Background';
-          if (opened) return;
+        document.querySelector('.background-preferences button').addEventListener('click', async ({ target }) => {
+          const content = document.querySelector('.background-preferences .content');
+          const isOpen = content.classList.contains('opened');
+
+          if (isOpen) {
+            content.style.maxHeight = null;
+            await delay(1800);
+            content.classList.toggle('opened');
+          }
+          else {
+            content.classList.toggle('opened');
+            await delay(1);
+            content.style.maxHeight = content.scrollHeight + 'px'
+          }
+
+          target.textContent = !isOpen ? 'Close' : 'Customize Background';
+          if (!isOpen) return;
 
           // Disable overlay when closing
           const overlay = backgroundForm['overlay-input'];
