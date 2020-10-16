@@ -32,8 +32,8 @@ exports.handler = async event => {
 function createSession() {
   return new Promise((resolve, reject) => {
     OT.createSession((err, session) => {
-      if (err) reject(err)
-      else resolve(session.sessionId)
+      if (err) return reject(err)
+      resolve(session.sessionId)
     })
   })
 }
