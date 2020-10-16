@@ -33,7 +33,7 @@ function createSession() {
   return new Promise((resolve, reject) => {
     OT.createSession((err, session) => {
       if (err) reject(err)
-      resolve(session.sessionId)
+      else resolve(session.sessionId)
     })
   })
 }
