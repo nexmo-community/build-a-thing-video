@@ -6,10 +6,10 @@ Every two weeks at <https://twitch.tv/vonagedevs> at 6PM UK-time, we continue de
 
 ## Setup
 
-1. Set up a MongoDB Project and Cluster
-1. Create a Database called `bat` and a Collection called `sesions`
-1. Allow Network Access From Anywhere in the MongoDB UI
-1. Click the button below to deploy<br><a href="https://app.netlify.com/start/deploy?repository=https://github.com/nexmo-community/build-a-thing-video">
+1. Set up a MongoDB Project and Cluster.
+1. Create a Database called `bat` and a Collection called `sesions`.
+1. Allow Network Access From Anywhere in the MongoDB UI.
+1. Click the button below to deploy.<br><a href="https://app.netlify.com/start/deploy?repository=https://github.com/nexmo-community/build-a-thing-video">
    <img src="https://www.netlify.com/img/deploy/button.svg">
    </a>
 
