@@ -13,11 +13,11 @@ Every two weeks at <https://twitch.tv/vonagedevs> at 6PM UK-time, we continue de
    <img src="https://www.netlify.com/img/deploy/button.svg">
    </a>
 
-1. Install the Netlify CLI and Login
-1. Clone your new repostiory created by clicking the button above
-1. Run `netlify init` and connect your local project to your Netlify application
-1. Run `npm install`
-1. Run `netlify dev` - the project will be running on port 8888 unless it is already in use
+1. Install the Netlify CLI and Login.
+1. Clone your new repostiory created by clicking the button above.
+1. Run `netlify init` and connect your local project to your Netlify application.
+1. Run `npm install`.
+1. Run `netlify dev` - the project will be running on port 8888 unless it is already in use.q
 
 ## Code of Conduct
 
