@@ -2,7 +2,8 @@
 
 :+1::tada: We :heart: contributions from everyone! :tada::+1:
 
-It is a good idea to [talk to us][slack] first if you plan to add any new functionality. Otherwise, [bug reports][issues], [bug fixes][pulls] and feedback on the library is always appreciated. Check out the [Contributing Guidelines][contributing] for more information and please follow the [GitHub Flow][githubflow].
+It is a good idea to [talk to us][slack] first if you plan to add any new functionality.<br>
+Otherwise, [bug reports][issues], [bug fixes][pulls] and feedback on the library is always appreciated - please follow the [GitHub Flow][githubflow].
 
 [![contributions welcome][contribadge]][issues]
 
@@ -18,8 +19,8 @@ Please take the time to review the [Code of Conduct][coc], which all contributor
 - [Suggesting Enhancements](#suggesting-enhancements)
   - [Before Submitting An Enhancement Suggestion](#before-submitting-an-enhancement-suggestion)
   - [How Do I Submit A (Good) Enhancement Suggestion?](#how-do-i-submit-a-good-enhancement-suggestion)
-- [Your First Code Contribution](#your-first-code-contribution)
 - [Pull Requests](#pull-requests)
+- [Get In Touch](#i-dont-want-to-read-this-whole-thing-i-just-have-a-question)
 
 ## Reporting Bugs
 
@@ -74,12 +75,12 @@ Enhancement suggestions are tracked as [GitHub issues][githubissues]. Create an 
 Please follow these steps to have your contribution considered by the maintainers:
 
 1. Follow all instructions in [the template][pullrequest]
-2. Adhear the [Code of Conduct][coc]
+2. Adhear to the [Code of Conduct][coc]
 3. After you submit your pull request, verify that all [status checks][githubstatuschecks] are passing.
 
 While the prerequisites above must be satisfied prior to having your pull request reviewed, the reviewer(s) may ask you to complete additional design work, tests, or other changes before your pull request can be ultimately accepted.
 
-# I don't want to read this whole thing I just have a question!
+## I don't want to read this whole thing I just have a question!
 
 You can join the Vonage Community Slack for any questions you might have:
 
@@ -99,20 +100,20 @@ Alternatively, you can raise an issue on the project.
 
 [contribadge]: https://img.shields.io/badge/contributions-welcome-brightgreen.svg?style=flat "Contributions Welcome"
 
-[coc]: .github/CODE_OF_CONDUCT.md "Code of Conduct"
+[coc]: CODE_OF_CONDUCT.md "Code of Conduct"
 [contributing]: .github/CONTRIBUTING.md "Contributing"
 [license]: LICENSE "MIT License"
-[pullrequest]: .github/PULL_REQUEST_TEMPLATE.md "Pull Request template"
+[pullrequest]: PULL_REQUEST_TEMPLATE.md "Pull Request template"
 
 [community]: https://developer.nexmo.com/community "Vonage Community"
 [signup]: https://dashboard.nexmo.com/sign-up?utm_source=DEV_REL&utm_medium=github&utm_campaign=phzn
 [slack]: https://developer.nexmo.com/community/slack "Vonage Community Slack"
 [twitter]: https://twitter.com/VonageDev "VonageDev on Twitter"
 
-[bugreport]: ./../../issues/new?assignees=&labels=&template=bug_report.md&title= "Bug Report Template"
-[featurerequest]: ./../../issues/new?assignees=&labels=&template=feature_request.md&title= "Enhancement Suggestion Template"
-[issues]: ./../../issues "Issues"
-[pulls]: ./../../pulls "Pull requests"
+[bugreport]: ../../../issues/new?assignees=&labels=&template=bug_report.md&title= "Bug Report Template"
+[featurerequest]: ../../../issues/new?assignees=&labels=&template=feature_request.md&title= "Enhancement Suggestion Template"
+[issues]: ../../../issues "Issues"
+[pulls]: ../../../pulls "Pull requests"
 
 [githubcodeblocks]: https://help.github.com/articles/markdown-basics/#multiple-lines "GitHub Markdown Code Blocks"
 [githubflow]: https://guides.github.com/introduction/flow/index.html "GitHub Flow"
