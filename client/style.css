@@ -122,6 +122,17 @@ main h2 {
   background: white;
   padding: 0.5em;
   border-radius: 10px;
+  display:grid;
+  grid-template-columns: 100px 1fr;
+}
+
+#messages li label {
+  font-size:0.9rem;
+  margin-bottom:0;
+  margin-right: 0.5rem;
+  text-overflow:ellipsis;
+  overflow:hidden;
+  white-space: nowrap;
 }
 
 @media all and (max-width: 750px) {
