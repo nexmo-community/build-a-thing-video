@@ -29,6 +29,7 @@
     <script src="https://static.opentok.com/v2/js/opentok.min.js"></script>
     <script>
       const params = Object.fromEntries(new URLSearchParams(location.search))
+      console.log("name: ",params);
       let session,
         camera,
         subscribers = []
@@ -36,7 +37,7 @@
         .then(r => r.json())
         .then(({ apiKey, sessionId, token }) => {
           session = OT.initSession(apiKey, sessionId)
-          camera = OT.initPublisher('publishers', { mirror: false })
+          camera = OT.initPublisher('publishers', { mirror: false, name:params.username })
           session.connect(token, () => {
             session.publish(camera)
           })
