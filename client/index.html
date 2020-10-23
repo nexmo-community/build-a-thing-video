@@ -12,6 +12,10 @@
   <div class="wrapper flex__center">
     <form id="enter">
       <div class="input-group">
+        <label for="username">Username</label>
+        <input type="text" id="username" />
+      </div>
+      <div class="input-group">
         <label for="room">Room Code</label>
         <input type="text" id="room" />
       </div>
@@ -22,9 +26,20 @@
     document.getElementById('enter').addEventListener('submit', event => {
       event.preventDefault()
       const room = document.getElementById('room').value
+      let username = document.getElementById('username').value
+      if (!username) return alert('Please provide a username')
+      if (username.indexOf('&') > 0 || username.indexOf('<') > 0 || username.indexOf('>') > 0 ) return alert('Please provide an username without special characters')
       if (!room) return alert('Please provide a room code')
-      window.location.replace(`/room?id=${room}`)
+      username = sanitizeHTML(username)
+      window.location.replace(`/room?id=${room}&username=${username}`)
     })
+
+    function sanitizeHTML(text) {
+      var element = document.createElement('div');
+      element.innerText = text;
+      return element.innerHTML;
+    }
+
   </script>
 </body>
 

@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Build a Thing Video App</title>
+    <link rel="stylesheet" href="style.css" />
+  </head>
+
+  <body>
+    <main id="access-screen">
+        <div id="alert-message"></div>
+        <form id="access-form">
+          <h1>Provide Access Code</h1>
+          <input type="text" id="access-code" placeholder="Access Code" />
+          <button>Submit</button>
+        </form>
+    </main>
+
+    <script>
+      const params = Object.fromEntries(new URLSearchParams(location.search))
+      const room = params.id
+      const username = params.username
+
+      document.getElementById('access-form').addEventListener('submit', event => {
+        event.preventDefault()
+        const accessCode = document.getElementById('access-code').value;
+        document.getElementById("alert-message").innerText="Checking Code..."
+        fetch(`/api/session?room=${params.id}&accesscode=${accessCode}`)
+          .then(r => r.json())
+          .then(({ access }) => {
+
+            if(access){
+              window.location.replace(`/room?id=${room}&username=${username}&code=${accessCode}`)
+              return
+            }
+
+            document.getElementById("alert-message").innerText="Access Denied"
+           
+          })
+      })
+    </script>
+  </body>
+</html>
