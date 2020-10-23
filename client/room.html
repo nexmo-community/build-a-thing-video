@@ -8,118 +8,110 @@
   </head>
 
   <body>
-    <main id="videos">
-      <nav>
-        <form id="lock-room">
-          <input type="text" id="access-code" placeholder="Access Code" />
-          <button id="lock-button" class="lock-button unlocked">Lock Room</button>
+    <div id="app">
+      <main id="videos">
+        <nav>
+          <form id="lock-room" @submit.prevent="lockRoom">
+            <input type="text" id="access-code" placeholder="Access Code" :disabled="roomLocked" v-model="inputAccessCode" />
+            <button id="lock-button" :class="{ 'lock-button': true, 'locked': roomLocked, 'unlocked': !roomLocked }">{{ roomLocked ? "Click to Unlock" : "Click to Lock" }}</button>
+          </form>
+        </nav>
+        <section class="video-streams video-streams__publishers">
+          <h2>Publishers</h2>
+          <div id="publishers"></div>
+        </section>
+        <section class="video-streams video-streams__subscribers">
+          <h2>Subscribers</h2>
+          <div id="subscribers"></div>
+        </section>
+      </main>
+      <aside id="chat">
+        <ul id="messages">
+          <li v-for="item in messages">
+            <label>{{item.username}}</label>
+            <div>{{item.message}}</div>
+          </li>
+        </ul>
+        <form id="new-message" @submit.prevent="submitMessage">
+          <input type="text" id="message" placeholder="New Message..." v-model="newMessage" />
+          <button>Send</button>
         </form>
-      </nav>
-      <section class="video-streams video-streams__publishers">
-        <h2>Publishers</h2>
-        <div id="publishers"></div>
-      </section>
-      <section class="video-streams video-streams__subscribers">
-        <h2>Subscribers</h2>
-        <div id="subscribers"></div>
-      </section>
-    </main>
-    <aside id="chat">
-      <ul id="messages"></ul>
-      <form id="new-message">
-        <input type="text" id="message" placeholder="New Message..." />
-        <button>Send</button>
-      </form>
-    </aside>
+      </aside>
+    </div>
 
     <script src="https://static.opentok.com/v2/js/opentok.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/vue@2.6.12/dist/vue.js"></script>
     <script>
-      const params = Object.fromEntries(new URLSearchParams(location.search))
-      let session,
-        camera,
-        subscribers = []
-      const username = params.username;
-      const buttonLock = document.getElementById("lock-button")
-      let roomLocked = false;
-      fetch(`/api/session?room=${params.id}&code=${params.code}`)
-        .then(r => r.json())
-        .then(({ apiKey, sessionId, token, locked, access }) => {
-
-          if(!access){
-            window.location.replace(`/access-required?id=${params.id}&username=${username}`)
-          }
-          session = OT.initSession(apiKey, sessionId)
-          camera = OT.initPublisher('publishers', { mirror: false, name: username, insertMode: 'append' })
-          roomLocked = locked
-          setLock(roomLocked,(params.code ? params.code : ""))
-          session.connect(token, () => {
-            session.publish(camera)
+      const app = new Vue({
+        el: '#app',
+        data: {
+          session: undefined,
+          camera: undefined,
+          subscribers: [],
+          roomLocked: false,
+          resp: undefined,
+          inputAccessCode: '',
+          messages: [],
+          newMessage: ''
+        },
+        async created() {
+          this.resp = await fetch(`/api/session?room=${this.params.id}&code=${this.params.code}`).then(r => r.json())
+          const { apiKey, sessionId, token, locked, access } = this.resp
+          if(!access) window.location.replace(`/access-required?id=${this.params.id}&username=${this.params.username}`)
+          this.session = OT.initSession(apiKey, sessionId)
+          this.camera = OT.initPublisher('publishers', { mirror: false, name: this.params.username, insertMode: 'append' })
+          this.roomLocked = locked
+          this.setLock(this.roomLocked,(this.params.code ? this.params.code : ""))
+          this.session.connect(token, () => { this.session.publish(this.camera) })
+          this.session.on('streamCreated', event => {
+            this.subscribers.push(event.stream)
+            this.session.subscribe(event.stream, 'subscribers', { insertMode: 'append' })
           })
-          session.on('streamCreated', event => {
-            console.log('Subscribed', event.stream.id)
-            subscribers.push(event.stream)
-            session.subscribe(event.stream, 'subscribers', { insertMode: 'append' })
+          this.session.on('streamDestroyed', event => {
+            this.subscribers = this.subscribers.filter(sub => sub.id != event.stream.id)
           })
-          session.on('streamDestroyed', event => {
-            console.log('Destroyed', event.stream.id)
-            subscribers = subscribers.filter(sub => sub.id != event.stream.id)
-          })
-          session.on('signal', event => {
+          this.session.on('signal', event => {
             switch (event.type) {
               case 'signal:message':
-                const messages = document.getElementById('messages')
-                const li = document.createElement('li')
-                const messageData = JSON.parse(event.data)
-                const labelUsername = document.createElement('label')
-                labelUsername.innerText = messageData.username;
-                li.appendChild(labelUsername)
-                const divMessage = document.createElement('div')
-                divMessage.innerText = messageData.message
-                li.appendChild(divMessage)
-                messages.appendChild(li)
+                this.messages.push(JSON.parse(event.data))
                 break
               case 'signal:lock':
                 const lockData = JSON.parse(event.data)
-                setLock(lockData.lock,lockData.code)
+                this.setLock(lockData.lock,lockData.code)
                 break
             }
           })
-        })
-
-      document.getElementById('new-message').addEventListener('submit', event => {
-        event.preventDefault()
-        const input = document.getElementById('message')
-        if (input.value) {
-          session.signal({
-            data: JSON.stringify({username:username,message:input.value }),
-            type: 'message'
-          })
-          input.value = ''
+        },
+        methods: {
+          setLock(locked, code) {
+            this.inputAccessCode = code
+            this.roomLocked = locked
+          },
+          submitMessage() {
+            if(this.newMessage) {
+              this.session.signal({
+                data: JSON.stringify({username: this.params.username, message: this.newMessage }),
+                type: 'message'
+              })
+              this.newMessage = ''
+            }
+          },
+          async lockRoom() {
+            const { apiKey, sessionId, token, locked } = await fetch(`/api/session?room=${this.params.id}&lock=${!this.roomLocked}&code=${this.inputAccessCode}`).then(r => r.json())
+            this.roomLocked = locked
+            this.session.signal({
+              data: JSON.stringify({lock: locked, code: this.inputAccessCode }),
+              type: 'lock'
+            })
+            this.setLock(this.roomLocked, this.inputAccessCode)
+          }
+        },
+        computed: {
+          params() {
+            return Object.fromEntries(new URLSearchParams(location.search));
+          }
         }
       })
-      document.getElementById('lock-room').addEventListener('submit', event => {
-        event.preventDefault()
-        console.log('lock button clicked')
-        const accessCode = document.getElementById('access-code').value;
-        fetch(`/api/session?room=${params.id}&lock=${!roomLocked}&code=${accessCode}`)
-          .then(r => r.json())
-          .then(({ apiKey, sessionId, token, locked }) => {
-            roomLocked = locked
-            session.signal({
-              data: JSON.stringify({lock:locked,code:accessCode }),
-              type:'lock'
-            })
-            setLock(roomLocked,accessCode)
-          })
-      })
-
-      function setLock(locked, code) {
-        const inputAccessCode = document.getElementById('access-code')
-        inputAccessCode.value = code
-        inputAccessCode.disabled = locked
-        buttonLock.innerText = locked ? "Room Locked" : "Lock Room"
-        buttonLock.className = locked ? "lock-button locked" : "lock-button unlocked"
-      }
     </script>
   </body>
 </html>
