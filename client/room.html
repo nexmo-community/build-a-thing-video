@@ -58,31 +58,36 @@
           this.resp = await fetch(`/api/session?room=${this.params.id}&code=${this.params.code}`).then(r => r.json())
           const { apiKey, sessionId, token, locked, access } = this.resp
           if(!access) window.location.replace(`/access-required?id=${this.params.id}&username=${this.params.username}`)
-          this.session = OT.initSession(apiKey, sessionId)
+
           this.camera = OT.initPublisher('publishers', { mirror: false, name: this.params.username, insertMode: 'append' })
           this.roomLocked = locked
           this.setLock(this.roomLocked,(this.params.code ? this.params.code : ""))
-          this.session.connect(token, () => { this.session.publish(this.camera) })
-          this.session.on('streamCreated', event => {
-            this.subscribers.push(event.stream)
-            this.session.subscribe(event.stream, 'subscribers', { insertMode: 'append' })
-          })
-          this.session.on('streamDestroyed', event => {
-            this.subscribers = this.subscribers.filter(sub => sub.id != event.stream.id)
-          })
-          this.session.on('signal', event => {
-            switch (event.type) {
-              case 'signal:message':
-                this.messages.push(JSON.parse(event.data))
-                break
-              case 'signal:lock':
-                const lockData = JSON.parse(event.data)
-                this.setLock(lockData.lock,lockData.code)
-                break
-            }
-          })
+
+          this.initSession(apiKey, sessionId, token)
         },
         methods: {
+          _initSession(apiKey, sessionId, token) {
+            this.session = OT.initSession(apiKey, sessionId)
+            this.session.connect(token, () => { this.session.publish(this.camera) })
+            this.session.on('streamCreated', event => {
+              this.subscribers.push(event.stream)
+              this.session.subscribe(event.stream, 'subscribers', { insertMode: 'append' })
+            })
+            this.session.on('streamDestroyed', event => {
+              this.subscribers = this.subscribers.filter(sub => sub.id != event.stream.id)
+            })
+            this.session.on('signal', event => {
+              switch (event.type) {
+                case 'signal:message':
+                  this.messages.push(JSON.parse(event.data))
+                  break
+                case 'signal:lock':
+                  const lockData = JSON.parse(event.data)
+                  this.setLock(lockData.lock,lockData.code)
+                  break
+              }
+            })
+          },
           setLock(locked, code) {
             this.inputAccessCode = code
             this.roomLocked = locked
