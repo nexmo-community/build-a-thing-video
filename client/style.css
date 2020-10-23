@@ -4,7 +4,7 @@
   box-sizing: border-box;
 }
 
-body {
+#app {
   font-family: Verdana, Geneva, Tahoma, sans-serif;
   font-size: 14px;
   min-height: 100vh;
@@ -141,7 +141,7 @@ nav {
 }
 
 @media all and (max-width: 750px) {
-  body {
+  #app {
     grid-template-columns: 1fr;
   }
 
