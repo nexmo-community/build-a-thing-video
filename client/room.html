@@ -49,7 +49,7 @@
             window.location.replace(`/access-required?id=${params.id}&username=${username}`)
           }
           session = OT.initSession(apiKey, sessionId)
-          camera = OT.initPublisher('publishers', { mirror: false, name:username })
+          camera = OT.initPublisher('publishers', { mirror: false, name: username, insertMode: 'append' })
           roomLocked = locked
           setLock(roomLocked,(params.code ? params.code : ""))
           session.connect(token, () => {
@@ -58,7 +58,7 @@
           session.on('streamCreated', event => {
             console.log('Subscribed', event.stream.id)
             subscribers.push(event.stream)
-            session.subscribe(event.stream, 'subscribers')
+            session.subscribe(event.stream, 'subscribers', { insertMode: 'append' })
           })
           session.on('streamDestroyed', event => {
             console.log('Destroyed', event.stream.id)
