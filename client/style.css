@@ -105,6 +105,11 @@ main h2 {
   border-radius: 1rem;
 }
 
+nav {
+  display: flex;
+  justify-content: flex-end;
+}
+
 /* CHAT */
 
 #chat {

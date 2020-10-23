@@ -9,18 +9,56 @@ exports.handler = async event => {
     const sessions = client.db('bat').collection('sessions')
     let session = await sessions.findOne({ friendly: event.queryStringParameters.room })
 
+    if(event.queryStringParameters.accesscode){
+      return {
+        statusCode: 200,
+        body: JSON.stringify({
+          access: session.code === event.queryStringParameters.accesscode
+        })
+      }
+    }
+
+    if(event.queryStringParameters.lock){
+      const isLockRoom = event.queryStringParameters.lock === 'true';
+
+      if(isLockRoom && !event.queryStringParameters.code){
+
+        return { statusCode: 500, body: String("Provide Access Code") }
+      }
+
+      const updateResponse = await sessions.updateOne({ friendly: event.queryStringParameters.room }, 
+        {$set:{locked:isLockRoom, code:event.queryStringParameters.code}})
+      
+      if(updateResponse.matchedCount === 0)
+      {
+        return { statusCode: 404, body: String(updateResponse) }
+      }
+      session = await sessions.findOne({ friendly: event.queryStringParameters.room })
+      return {
+        statusCode: 200,
+        body: JSON.stringify({
+          sessionId: session.sessionId,
+          locked: session.locked,
+          code: session.code
+        })
+      }
+    }
+
     if (!session) {
-      const newSession = { sessionId: await createSession(), friendly: event.queryStringParameters.room }
+      const newSession = { sessionId: await createSession(), friendly: event.queryStringParameters.room, locked: false }
       await sessions.insertOne(newSession)
       session = newSession
     }
 
+    const access = !session.locked || (event.queryStringParameters.code === session.code);
     return {
       statusCode: 200,
       body: JSON.stringify({
         sessionId: session.sessionId,
         apiKey: process.env.VIDEO_KEY,
-        token: OT.generateToken(session.sessionId, { role: 'publisher' })
+        token: OT.generateToken(session.sessionId, { role: 'publisher' }),
+        locked: session.locked,
+        access: access
       })
     }
   } catch (err) {

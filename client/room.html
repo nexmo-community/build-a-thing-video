@@ -9,6 +9,12 @@
 
   <body>
     <main id="videos">
+      <nav>
+        <form id="lock-room">
+          <input type="text" id="access-code" placeholder="Access Code" />
+          <button id="lock-button" class="lock-button unlocked">Lock Room</button>
+        </form>
+      </nav>
       <section class="video-streams video-streams__publishers">
         <h2>Publishers</h2>
         <div id="publishers"></div>
@@ -33,11 +39,19 @@
         camera,
         subscribers = []
       const username = params.username;
-      fetch(`/api/session?room=${params.id}`)
+      const buttonLock = document.getElementById("lock-button")
+      let roomLocked = false;
+      fetch(`/api/session?room=${params.id}&code=${params.code}`)
         .then(r => r.json())
-        .then(({ apiKey, sessionId, token }) => {
+        .then(({ apiKey, sessionId, token, locked, access }) => {
+
+          if(!access){
+            window.location.replace(`/access-required?id=${params.id}&username=${username}`)
+          }
           session = OT.initSession(apiKey, sessionId)
           camera = OT.initPublisher('publishers', { mirror: false, name:username })
+          roomLocked = locked
+          setLock(roomLocked,(params.code ? params.code : ""))
           session.connect(token, () => {
             session.publish(camera)
           })
@@ -64,6 +78,10 @@
                 li.appendChild(divMessage)
                 messages.appendChild(li)
                 break
+              case 'signal:lock':
+                const lockData = JSON.parse(event.data)
+                setLock(lockData.lock,lockData.code)
+                break
             }
           })
         })
@@ -79,6 +97,29 @@
           input.value = ''
         }
       })
+      document.getElementById('lock-room').addEventListener('submit', event => {
+        event.preventDefault()
+        console.log('lock button clicked')
+        const accessCode = document.getElementById('access-code').value;
+        fetch(`/api/session?room=${params.id}&lock=${!roomLocked}&code=${accessCode}`)
+          .then(r => r.json())
+          .then(({ apiKey, sessionId, token, locked }) => {
+            roomLocked = locked
+            session.signal({
+              data: JSON.stringify({lock:locked,code:accessCode }),
+              type:'lock'
+            })
+            setLock(roomLocked,accessCode)
+          })
+      })
+
+      function setLock(locked, code) {
+        const inputAccessCode = document.getElementById('access-code')
+        inputAccessCode.value = code
+        inputAccessCode.disabled = locked
+        buttonLock.innerText = locked ? "Room Locked" : "Lock Room"
+        buttonLock.className = locked ? "lock-button locked" : "lock-button unlocked"
+      }
     </script>
   </body>
 </html>
