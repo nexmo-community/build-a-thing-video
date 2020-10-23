@@ -89,8 +89,9 @@
           },
           submitMessage() {
             if(this.newMessage) {
+              const chatname = this.params.username.split(" - ")[0]
               this.session.signal({
-                data: JSON.stringify({username: this.params.username, message: this.newMessage }),
+                data: JSON.stringify({username: chatname, message: this.newMessage }),
                 type: 'message'
               })
               this.newMessage = ''

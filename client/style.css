@@ -129,6 +129,7 @@ nav {
   border-radius: 10px;
   display:grid;
   grid-template-columns: 100px 1fr;
+  word-break: break-all;
 }
 
 #messages li label {
