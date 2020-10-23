@@ -75,7 +75,7 @@ Enhancement suggestions are tracked as [GitHub issues][githubissues]. Create an 
 Please follow these steps to have your contribution considered by the maintainers:
 
 1. Follow all instructions in [the template][pullrequest]
-2. Adhear to the [Code of Conduct][coc]
+2. Adhere to the [Code of Conduct][coc]
 3. After you submit your pull request, verify that all [status checks][githubstatuschecks] are passing.
 
 While the prerequisites above must be satisfied prior to having your pull request reviewed, the reviewer(s) may ask you to complete additional design work, tests, or other changes before your pull request can be ultimately accepted.
