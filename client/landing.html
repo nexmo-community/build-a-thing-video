@@ -25,12 +25,18 @@
     </header>
 
     <main>
-      <div id="screen" class="screen"></div>
-      <div id="subscriber" class="subscriber"></div>
-      <div id="publisher" class="publisher"></div>
-
-      <button id="startScreenShare" class="screen-share">Share Screen</button>
-      <button id="stopScreenShare" class="screen-share hidden">Stop Sharing Screen</button>
+      <form id="registration" class="registration">
+        <label>
+          <span>Room</span>
+          <input
+            type="text"
+            name="room-name"
+            placeholder="Enter room name"
+            required
+          />
+        </label>
+        <button>Enter</button>
+      </form>
     </main>
 
     <footer>
@@ -42,7 +48,12 @@
       </p>
     </footer>
 
-    <script src="https://static.opentok.com/v2/js/opentok.min.js"></script>
-    <script src="/client.js"></script>
+    <script>
+      const form = document.getElementById("registration");
+      form.addEventListener("submit", event => {
+        event.preventDefault();
+        location.pathname = `/session/${form.elements["room-name"].value}`;
+      });
+    </script>
   </body>
 </html>
