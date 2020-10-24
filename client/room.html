@@ -63,19 +63,28 @@
           this.roomLocked = locked
           this.setLock(this.roomLocked,(this.params.code ? this.params.code : ""))
 
-          this.initSession(apiKey, sessionId, token)
+          this._initSession(apiKey, sessionId, token)
+          this._subscribeStreamCreated()
+          this._subscribeStreamDestroyed()
+          this._subscribeSignal()
         },
         methods: {
           _initSession(apiKey, sessionId, token) {
             this.session = OT.initSession(apiKey, sessionId)
             this.session.connect(token, () => { this.session.publish(this.camera) })
+          },
+          _subscribeStreamCreated() {
             this.session.on('streamCreated', event => {
               this.subscribers.push(event.stream)
               this.session.subscribe(event.stream, 'subscribers', { insertMode: 'append' })
             })
+          },
+          _subscribeStreamDestroyed() {
             this.session.on('streamDestroyed', event => {
               this.subscribers = this.subscribers.filter(sub => sub.id != event.stream.id)
             })
+          },
+          _subscribeSignal() {
             this.session.on('signal', event => {
               switch (event.type) {
                 case 'signal:message':
