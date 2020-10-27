@@ -16,6 +16,10 @@
         <input type="text" id="username" />
       </div>
       <div class="input-group">
+        <label for="pronouns">Pronouns</label>
+        <input type="text" id="pronouns">
+      </div>
+      <div class="input-group">
         <label for="room">Room Code</label>
         <input type="text" id="room" />
       </div>
@@ -27,10 +31,11 @@
       event.preventDefault()
       const room = document.getElementById('room').value
       let username = document.getElementById('username').value
+      const pronouns = document.getElementById('pronouns').value
       if (!username) return alert('Please provide a username')
       if (username.indexOf('&') > 0 || username.indexOf('<') > 0 || username.indexOf('>') > 0 ) return alert('Please provide an username without special characters')
       if (!room) return alert('Please provide a room code')
-      username = sanitizeHTML(username)
+      username = sanitizeHTML(`${username} - ${pronouns}`)
       window.location.replace(`/room?id=${room}&username=${username}`)
     })
 
