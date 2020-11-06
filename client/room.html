@@ -4,39 +4,37 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Build a Thing Video App</title>
-    <link rel="stylesheet" href="style.css" />
+    <link href="https://unpkg.com/tailwindcss@^1.0/dist/tailwind.min.css" rel="stylesheet">
   </head>
 
   <body>
     <div id="app">
-      <main id="videos">
-        <nav>
-          <form id="lock-room" @submit.prevent="lockRoom">
-            <input type="text" id="access-code" placeholder="Access Code" :disabled="roomLocked" v-model="inputAccessCode" />
-            <button id="lock-button" :class="{ 'lock-button': true, 'locked': roomLocked, 'unlocked': !roomLocked }">{{ roomLocked ? "Click to Unlock" : "Click to Lock" }}</button>
+      <header class="bg-pink-600 p-2 flex flex-row justify-center">
+        <div id="publishers"></div>
+      </header>
+      <main style="display: grid; grid-template-columns: auto 300px; gap: 2em;">
+        <div class="p-2">
+          <div id="subscribers" class="flex flex-row flex-wrap" style="gap: 8px;"></div>
+        </div>
+        <div class="bg-gray-100 p-2 flex flex-col" style="height: calc(100vh - 88px)">
+          <form class="border-b-2 border-gray-300 pb-2" @submit.prevent="lockRoom">
+            <input :class="{ 'bg-gray-300': roomLocked, 'bg-white': !roomLocked }" class="w-full shadow appearance-none rounded w-full py-2 px-3 text-gray-700 mb-3 leading-tight focus:outline-none focus:shadow-outline" type="text" id="access-code" placeholder="Access Code" :disabled="roomLocked" v-model="inputAccessCode"  />
+            <button id="lock-button" :class="{ 'bg-red-500': roomLocked, 'hover:bg-red-700': roomLocked, 'bg-green-500': !roomLocked, 'hover:bg-green-700': !roomLocked, }" class="w-full text-white font-bold py-2 px-4 rounded">{{ roomLocked ? "Click to Unlock" : "Click to Lock" }}</button>
           </form>
-        </nav>
-        <section class="video-streams video-streams__publishers">
-          <h2>Publishers</h2>
-          <div id="publishers"></div>
-        </section>
-        <section class="video-streams video-streams__subscribers">
-          <h2>Subscribers</h2>
-          <div id="subscribers"></div>
-        </section>
+          <div ref="messages" class="flex-1 overflow-y-scroll">
+            <ul>
+              <li v-for="item in messages" class="bg-white p-2 rounded break-all my-2">
+                <label class="text-sm mb-1">{{item.username}}</label>
+                <div>{{item.message}}</div>
+              </li>
+            </ul>
+          </div>
+          <form class="border-t-2 border-gray-300 pt-2" @submit.prevent="submitMessage">
+            <input class="bg-white w-full shadow appearance-none rounded w-full py-2 px-3 text-gray-700 mb-3 leading-tight focus:outline-none focus:shadow-outline" type="text" id="message" placeholder="New Message..." v-model="newMessage" />
+            <button class="bg-pink-600 w-full text-white font-bold py-2 px-4 rounded">Send</button>
+          </form>
+        </div>
       </main>
-      <aside id="chat">
-        <ul id="messages">
-          <li v-for="item in messages">
-            <label>{{item.username}}</label>
-            <div>{{item.message}}</div>
-          </li>
-        </ul>
-        <form id="new-message" @submit.prevent="submitMessage">
-          <input type="text" id="message" placeholder="New Message..." v-model="newMessage" />
-          <button>Send</button>
-        </form>
-      </aside>
     </div>
 
     <script src="https://static.opentok.com/v2/js/opentok.min.js"></script>
@@ -59,7 +57,13 @@
           const { apiKey, sessionId, token, locked, access } = this.resp
           if(!access) window.location.replace(`/access-required?id=${this.params.id}&username=${this.params.username}`)
 
-          this.camera = OT.initPublisher('publishers', { mirror: false, name: this.params.username, insertMode: 'append' })
+          this.camera = OT.initPublisher('publishers', {
+            mirror: false,
+            name: this.params.username,
+            insertMode: 'append',
+            width: 128,
+            height: 72
+          })
           this.roomLocked = locked
           this.setLock(this.roomLocked,(this.params.code ? this.params.code : ""))
 
@@ -76,7 +80,11 @@
           _subscribeStreamCreated() {
             this.session.on('streamCreated', event => {
               this.subscribers.push(event.stream)
-              this.session.subscribe(event.stream, 'subscribers', { insertMode: 'append' })
+              this.session.subscribe(event.stream, 'subscribers', {
+                insertMode: 'append',
+                width: 320,
+                height: 240
+              })
             })
           },
           _subscribeStreamDestroyed() {
@@ -89,6 +97,10 @@
               switch (event.type) {
                 case 'signal:message':
                   this.messages.push(JSON.parse(event.data))
+                  Vue.nextTick(() => {
+                    const messages = this.$refs.messages;
+                    messages.scrollTop = messages.scrollHeight
+                  })
                   break
                 case 'signal:lock':
                   const lockData = JSON.parse(event.data)

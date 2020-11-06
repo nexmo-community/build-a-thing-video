@@ -5,30 +5,34 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Build a Thing Video App</title>
-  <link rel="stylesheet" href="style.css">
+  <link href="https://unpkg.com/tailwindcss@^1.0/dist/tailwind.min.css" rel="stylesheet">
 </head>
 
-<body class="flex__center">
-  <div class="wrapper flex__center">
-    <form id="enter">
-      <div class="input-group">
-        <label for="username">Username</label>
-        <input type="text" id="username" />
+<body class="bg-gray-200">
+  <div class="w-full max-w-xs mx-auto mt-10">
+    <form id="enter" class="bg-white shadow-md rounded px-8 pt-6 pb-8 mb-4">
+      <div class="mb-4">
+        <label class="block text-gray-700 text-sm font-bold mb-2" for="username">Username</label>
+        <input class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" id="username" type="text" placeholder="Username">
       </div>
-      <div class="input-group">
-        <label for="pronouns">Pronouns</label>
-        <input type="text" id="pronouns">
+      <div class="mb-4">
+        <label class="block text-gray-700 text-sm font-bold mb-2" for="pronouns">Pronouns</label>
+        <input class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" id="pronouns" type="text" placeholder="Pronouns">
       </div>
-      <div class="input-group">
-        <label for="room">Room Code</label>
-        <input type="text" id="room" />
+      <div class="mb-4">
+        <label class="block text-gray-700 text-sm font-bold mb-2" for="room">Room Code</label>
+        <input class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" id="room" type="text" placeholder="Code">
       </div>
-      <button>Enter Room</button>
+      <div class="flex items-center justify-between">
+        <button class="bg-pink-600 w-full text-white font-bold py-2 px-4 rounded">Enter Room</button>
+      </div>
     </form>
+    <p class="text-center text-gray-500 text-xs">Built live on <a href="https://twitch.tv/vonagedevs">Twitch</a>. Code on <a href="https://github.com/nexmo-community/build-a-thing-video">GitHub</a>.</p>
   </div>
   <script>
-    document.getElementById('enter').addEventListener('submit', event => {
+    document.querySelector('form').addEventListener('submit', event => {
       event.preventDefault()
+      console.log('Button pressed')
       const room = document.getElementById('room').value
       let username = document.getElementById('username').value
       const pronouns = document.getElementById('pronouns').value

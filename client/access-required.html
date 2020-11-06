@@ -4,18 +4,23 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Build a Thing Video App</title>
-    <link rel="stylesheet" href="style.css" />
+    <link href="https://unpkg.com/tailwindcss@^1.0/dist/tailwind.min.css" rel="stylesheet">
   </head>
 
-  <body>
-    <main id="access-screen">
-        <div id="alert-message"></div>
-        <form id="access-form">
-          <h1>Provide Access Code</h1>
-          <input type="text" id="access-code" placeholder="Access Code" />
-          <button>Submit</button>
-        </form>
-    </main>
+  <body class="bg-gray-200">
+
+    <div class="w-full max-w-xs mx-auto mt-10">
+      <div id="alert-message"></div>
+      <form id="access-form" class="bg-white shadow-md rounded px-8 pt-6 pb-8 mb-4">
+        <div class="mb-4">
+          <label class="block text-gray-700 text-sm font-bold mb-2" for="access-code">Access Code</label>
+          <input class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" id="access-code" type="text">
+        </div>
+        <div class="flex items-center justify-between">
+          <button class="bg-pink-600 w-full text-white font-bold py-2 px-4 rounded">Enter Room</button>
+        </div>
+      </form>
+    </div>
 
     <script>
       const params = Object.fromEntries(new URLSearchParams(location.search))
@@ -36,7 +41,7 @@
             }
 
             document.getElementById("alert-message").innerText="Access Denied"
-           
+
           })
       })
     </script>
