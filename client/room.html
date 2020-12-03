@@ -18,19 +18,19 @@
         </div>
         <div class="bg-gray-100 p-2 flex flex-col" style="height: calc(100vh - 88px)">
           <form class="border-b-2 border-gray-300 pb-2" @submit.prevent="lockRoom">
-            <input :class="{ 'bg-gray-300': roomLocked, 'bg-white': !roomLocked }" class="w-full shadow appearance-none rounded w-full py-2 px-3 text-gray-700 mb-3 leading-tight focus:outline-none focus:shadow-outline" type="text" id="access-code" placeholder="Access Code" :disabled="roomLocked" v-model="inputAccessCode"  />
-            <button id="lock-button" :class="{ 'bg-red-500': roomLocked, 'hover:bg-red-700': roomLocked, 'bg-green-500': !roomLocked, 'hover:bg-green-700': !roomLocked, }" class="w-full text-white font-bold py-2 px-4 rounded">{{ roomLocked ? "Click to Unlock" : "Click to Lock" }}</button>
+            <input :class="{ 'bg-gray-300': security.roomLocked, 'bg-white': !security.roomLocked }" class="w-full shadow appearance-none rounded w-full py-2 px-3 text-gray-700 mb-3 leading-tight focus:outline-none focus:shadow-outline" type="text" id="access-code" placeholder="Access Code" :disabled="security.roomLocked" v-model="security.inputAccessCode"  />
+            <button id="lock-button" :class="{ 'bg-red-500': security.roomLocked, 'hover:bg-red-700': security.roomLocked, 'bg-green-500': !security.roomLocked, 'hover:bg-green-700': !security.roomLocked, }" class="w-full text-white font-bold py-2 px-4 rounded">{{ security.roomLocked ? "Click to Unlock" : "Click to Lock" }}</button>
           </form>
           <div ref="messages" class="flex-1 overflow-y-scroll">
             <ul>
-              <li v-for="item in messages" class="bg-white p-2 rounded break-all my-2">
+              <li v-for="item in messaging.messages" class="bg-white p-2 rounded break-all my-2">
                 <label class="text-sm mb-1">{{item.username}}</label>
                 <div>{{item.message}}</div>
               </li>
             </ul>
           </div>
           <form class="border-t-2 border-gray-300 pt-2" @submit.prevent="submitMessage">
-            <input class="bg-white w-full shadow appearance-none rounded w-full py-2 px-3 text-gray-700 mb-3 leading-tight focus:outline-none focus:shadow-outline" type="text" id="message" placeholder="New Message..." v-model="newMessage" />
+            <input class="bg-white w-full shadow appearance-none rounded w-full py-2 px-3 text-gray-700 mb-3 leading-tight focus:outline-none focus:shadow-outline" type="text" id="message" placeholder="New Message..." v-model="messaging.newMessage" />
             <button class="bg-pink-600 w-full text-white font-bold py-2 px-4 rounded">Send</button>
           </form>
         </div>
@@ -43,29 +43,35 @@
       const app = new Vue({
         el: '#app',
         data: {
-          session: undefined,
-          camera: undefined,
-          subscribers: [],
-          roomLocked: false,
-          resp: undefined,
-          inputAccessCode: '',
-          messages: [],
-          newMessage: ''
+          connection: {
+            session: undefined,
+            camera: undefined,
+            subscribers: [],
+          },
+          security: {
+            roomLocked: false,
+            inputAccessCode: '',
+          },
+          messaging: {
+            messages: [],
+            newMessage: ''
+          },
+          resp: undefined
         },
         async created() {
           this.resp = await fetch(`/api/session?room=${this.params.id}&code=${this.params.code}`).then(r => r.json())
           const { apiKey, sessionId, token, locked, access } = this.resp
           if(!access) window.location.replace(`/access-required?id=${this.params.id}&username=${this.params.username}`)
 
-          this.camera = OT.initPublisher('publishers', {
+          this.connection.camera = OT.initPublisher('publishers', {
             mirror: false,
             name: this.params.username,
             insertMode: 'append',
             width: 128,
             height: 72
           })
-          this.roomLocked = locked
-          this.setLock(this.roomLocked,(this.params.code ? this.params.code : ""))
+          this.security.roomLocked = locked
+          this.setLock(this.security.roomLocked,(this.params.code ? this.params.code : ""))
 
           this._initSession(apiKey, sessionId, token)
           this._subscribeStreamCreated()
@@ -74,13 +80,13 @@
         },
         methods: {
           _initSession(apiKey, sessionId, token) {
-            this.session = OT.initSession(apiKey, sessionId)
-            this.session.connect(token, () => { this.session.publish(this.camera) })
+            this.connection.session = OT.initSession(apiKey, sessionId)
+            this.connection.session.connect(token, () => { this.connection.session.publish(this.connection.camera) })
           },
           _subscribeStreamCreated() {
-            this.session.on('streamCreated', event => {
-              this.subscribers.push(event.stream)
-              this.session.subscribe(event.stream, 'subscribers', {
+            this.connection.session.on('streamCreated', event => {
+              this.connection.subscribers.push(event.stream)
+              this.connection.session.subscribe(event.stream, 'subscribers', {
                 insertMode: 'append',
                 width: 320,
                 height: 240
@@ -88,15 +94,15 @@
             })
           },
           _subscribeStreamDestroyed() {
-            this.session.on('streamDestroyed', event => {
-              this.subscribers = this.subscribers.filter(sub => sub.id != event.stream.id)
+            this.connection.session.on('streamDestroyed', event => {
+              this.connection.subscribers = this.connection.subscribers.filter(sub => sub.id != event.stream.id)
             })
           },
           _subscribeSignal() {
-            this.session.on('signal', event => {
+            this.connection.session.on('signal', event => {
               switch (event.type) {
                 case 'signal:message':
-                  this.messages.push(JSON.parse(event.data))
+                  this.messaging.messages.push(JSON.parse(event.data))
                   Vue.nextTick(() => {
                     const messages = this.$refs.messages;
                     messages.scrollTop = messages.scrollHeight
@@ -110,27 +116,27 @@
             })
           },
           setLock(locked, code) {
-            this.inputAccessCode = code
-            this.roomLocked = locked
+            this.security.inputAccessCode = code
+            this.security.roomLocked = locked
           },
           submitMessage() {
-            if(this.newMessage) {
+            if(this.messaging.newMessage) {
               const chatname = this.params.username.split(" - ")[0]
-              this.session.signal({
-                data: JSON.stringify({username: chatname, message: this.newMessage }),
+              this.connection.session.signal({
+                data: JSON.stringify({username: chatname, message: this.messaging.newMessage }),
                 type: 'message'
               })
-              this.newMessage = ''
+              this.messaging.newMessage = ''
             }
           },
           async lockRoom() {
-            const { apiKey, sessionId, token, locked } = await fetch(`/api/session?room=${this.params.id}&lock=${!this.roomLocked}&code=${this.inputAccessCode}`).then(r => r.json())
-            this.roomLocked = locked
-            this.session.signal({
-              data: JSON.stringify({lock: locked, code: this.inputAccessCode }),
+            const { apiKey, sessionId, token, locked } = await fetch(`/api/session?room=${this.params.id}&lock=${!this.security.roomLocked}&code=${this.security.inputAccessCode}`).then(r => r.json())
+            this.security.roomLocked = locked
+            this.connection.session.signal({
+              data: JSON.stringify({lock: locked, code: this.security.inputAccessCode }),
               type: 'lock'
             })
-            this.setLock(this.roomLocked, this.inputAccessCode)
+            this.setLock(this.security.roomLocked, this.security.inputAccessCode)
           }
         },
         computed: {
