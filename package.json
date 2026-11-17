@@ -4,7 +4,7 @@
   "description": "![Vonage](.github/vonage.png)",
   "main": "index.js",
   "dependencies": {
-    "mongodb": "^3.6.2",
+    "mongodb": "^7.0.0",
     "opentok": "^2.10.0"
   },
   "devDependencies": {},
